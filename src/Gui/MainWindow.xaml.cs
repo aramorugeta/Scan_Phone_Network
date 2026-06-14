@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Win32;
 using WinForms = System.Windows.Forms;
 
@@ -80,6 +81,18 @@ public partial class MainWindow : Window
     }
 
     private void OnStopClick(object sender, RoutedEventArgs e) => _scanCts?.Cancel();
+
+    /// <summary>숨김 고급 옵션(대상 대역 직접 지정) 토글: Ctrl+Shift+A. 아는 사람만 사용.</summary>
+    private void OnWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.A
+            && (Keyboard.Modifiers & ModifierKeys.Control) != 0
+            && (Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+        {
+            AdvancedPanel.Visibility = AdvancedPanel.Visibility == Visibility.Visible
+                ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
 
     private void ShowReport(ScanReport report)
     {
