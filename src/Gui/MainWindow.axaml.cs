@@ -287,11 +287,6 @@ public partial class MainWindow : Window
         catch { /* 트레이 미지원 환경이면 무시 */ }
     }
 
-    protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        // 최소화 시 트레이로 숨김(감시 모드 방해 없음)
-        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized)
-            Hide();
-    }
+    // 최소화 시 자동 숨김은 제거(일부 환경에서 창이 사라지는 문제 방지).
+    // 트레이로 보내려면 트레이 메뉴/감시 모드를 사용.
 }
