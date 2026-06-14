@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FD9A4230-8296-4445-88A2-8BA2A5096972}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanPhoneNetwork.Core", "src\Core\ScanPhoneNetwork.Core.csproj", "{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanPhoneNetwork.Cli", "src\Cli\ScanPhoneNetwork.Cli.csproj", "{F548FE5C-65CE-4C80-AB33-1C88418007DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanPhoneNetwork.Gui", "src\Gui\ScanPhoneNetwork.Gui.csproj", "{A1B2C3D4-0001-4E2A-9F3B-1234567890AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F548FE5C-65CE-4C80-AB33-1C88418007DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F548FE5C-65CE-4C80-AB33-1C88418007DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F548FE5C-65CE-4C80-AB33-1C88418007DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F548FE5C-65CE-4C80-AB33-1C88418007DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-0001-4E2A-9F3B-1234567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-0001-4E2A-9F3B-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-0001-4E2A-9F3B-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-0001-4E2A-9F3B-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2ACCB653-DE32-4C89-94C2-88C0D0E4AE51} = {FD9A4230-8296-4445-88A2-8BA2A5096972}
+		{F548FE5C-65CE-4C80-AB33-1C88418007DA} = {FD9A4230-8296-4445-88A2-8BA2A5096972}
+		{A1B2C3D4-0001-4E2A-9F3B-1234567890AB} = {FD9A4230-8296-4445-88A2-8BA2A5096972}
+	EndGlobalSection
+EndGlobal

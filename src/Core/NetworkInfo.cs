@@ -1,0 +1,82 @@
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+
+namespace ScanPhoneNetwork;
+
+/// <summary>실행 PC 가 속한 IPv4 대역을 알아내고 스캔 대상 IP 목록을 만든다.</summary>
+public static class NetworkInfo
+{
+    public sealed record LocalSubnet(
+        IPAddress LocalIp,
+        IPAddress Mask,
+        IPAddress? Gateway,
+        string InterfaceName);
+
+    /// <summary>업/다운 상태인 첫 번째 실 이더넷/무선 인터페이스의 IPv4 정보를 반환.</summary>
+    public static LocalSubnet? GetActiveSubnet()
+    {
+        foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (nic.OperationalStatus != OperationalStatus.Up) continue;
+            if (nic.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel)
+                continue;
+
+            var props = nic.GetIPProperties();
+            foreach (var ua in props.UnicastAddresses)
+            {
+                if (ua.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+                if (IPAddress.IsLoopback(ua.Address)) continue;
+
+                var gw = props.GatewayAddresses
+                    .Select(g => g.Address)
+                    .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+
+                return new LocalSubnet(ua.Address, ua.IPv4Mask, gw, nic.Name);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// "10.20.30.0/24" 같은 CIDR 문자열을 (네트워크주소, 마스크)로 해석.
+    /// 학교 10.x 대역을 인자로 직접 지정할 때 사용.
+    /// </summary>
+    public static bool TryParseCidr(string cidr, out IPAddress network, out IPAddress mask)
+    {
+        network = IPAddress.None;
+        mask = IPAddress.None;
+
+        var parts = cidr.Split('/');
+        if (parts.Length != 2) return false;
+        if (!IPAddress.TryParse(parts[0], out var ip)) return false;
+        if (ip.AddressFamily != AddressFamily.InterNetwork) return false;
+        if (!int.TryParse(parts[1], out int prefix) || prefix is < 0 or > 32) return false;
+
+        uint maskv = prefix == 0 ? 0u : 0xFFFFFFFF << (32 - prefix);
+        mask = FromUInt(maskv);
+        network = FromUInt(ToUInt(ip) & maskv);
+        return true;
+    }
+
+    /// <summary>서브넷 내 호스트 IP 전체를 열거 (네트워크/브로드캐스트 주소 제외).</summary>
+    public static IEnumerable<IPAddress> EnumerateHosts(IPAddress ip, IPAddress mask)
+    {
+        uint ipv = ToUInt(ip);
+        uint maskv = ToUInt(mask);
+        uint network = ipv & maskv;
+        uint broadcast = network | ~maskv;
+
+        for (uint a = network + 1; a < broadcast; a++)
+            yield return FromUInt(a);
+    }
+
+    private static uint ToUInt(IPAddress ip)
+    {
+        var b = ip.GetAddressBytes();
+        return ((uint)b[0] << 24) | ((uint)b[1] << 16) | ((uint)b[2] << 8) | b[3];
+    }
+
+    private static IPAddress FromUInt(uint v) =>
+        new(new[] { (byte)(v >> 24), (byte)(v >> 16), (byte)(v >> 8), (byte)v });
+}

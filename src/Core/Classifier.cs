@@ -1,0 +1,81 @@
+using System.Net;
+
+namespace ScanPhoneNetwork;
+
+/// <summary>수집한 모든 신호를 합쳐 장비 종류와 신뢰도(0~100)를 판정.</summary>
+public static class Classifier
+{
+    public static void Classify(DiscoveredHost h, int? baselineTtl, IReadOnlySet<IPAddress>? dhcpServers)
+    {
+        // 1) OUI 제조사
+        var oui = OuiDatabase.Lookup(h.Mac);
+        if (oui is not null)
+        {
+            h.Vendor = oui.Vendor;
+            if (oui.Category != DeviceCategory.Unknown)
+            {
+                h.Category = oui.Category;
+                h.Confidence += 50;
+                h.Evidence.Add($"OUI 제조사 = {oui.Vendor}");
+            }
+            else
+            {
+                h.Evidence.Add($"제조사 = {oui.Vendor}");
+            }
+        }
+
+        // 2) DHCP 서버 = 무단 라우터의 결정적 신호
+        if (h.DhcpServer || (dhcpServers is not null && dhcpServers.Contains(h.Ip)))
+        {
+            h.DhcpServer = true;
+            h.Category = DeviceCategory.Router;
+            h.Confidence += 45;
+            h.Evidence.Add("DHCP OFFER 응답 → 자체 DHCP 서버(공유기)");
+        }
+
+        // 3) SSDP InternetGatewayDevice
+        if (h.SsdpGateway)
+        {
+            if (h.Category is DeviceCategory.Unknown) h.Category = DeviceCategory.Router;
+            h.Confidence += 30;
+            h.Evidence.Add("SSDP InternetGatewayDevice 광고");
+        }
+
+        // 4) SIP 포트 = 전화기
+        if (h.OpenPorts.Contains(5060) || h.OpenPorts.Contains(5061))
+        {
+            if (h.Category is DeviceCategory.Unknown) h.Category = DeviceCategory.VoipPhone;
+            h.Confidence += 25;
+            h.Evidence.Add("SIP 포트(5060/5061) 열림");
+        }
+
+        // 5) HTTP/SIP 배너 키워드
+        foreach (var b in h.Banners)
+        {
+            var lower = b.ToLowerInvariant();
+            if (lower.Contains("iptime") || lower.Contains("tp-link") || lower.Contains("dd-wrt")
+                || lower.Contains("openwrt") || lower.Contains("router") || lower.Contains("gateway"))
+            {
+                if (h.Category is DeviceCategory.Unknown) h.Category = DeviceCategory.Router;
+                h.Confidence += 20;
+                h.Evidence.Add($"배너에 공유기 키워드: {b}");
+            }
+            else if (lower.Contains("sip") || lower.Contains("yealink") || lower.Contains("grandstream")
+                || lower.Contains("voip") || lower.Contains("phone"))
+            {
+                if (h.Category is DeviceCategory.Unknown) h.Category = DeviceCategory.VoipPhone;
+                h.Confidence += 15;
+                h.Evidence.Add($"배너에 전화기 키워드: {b}");
+            }
+        }
+
+        // 6) TTL 추가 홉(NAT 뒤)
+        if (baselineTtl is int bl && h.Ttl is int t && t < bl)
+        {
+            h.Confidence += 10;
+            h.Evidence.Add($"TTL {t} < 기준 {bl} → 추가 홉(라우팅 장비) 의심");
+        }
+
+        if (h.Confidence > 100) h.Confidence = 100;
+    }
+}
