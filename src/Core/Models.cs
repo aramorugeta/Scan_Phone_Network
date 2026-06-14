@@ -13,6 +13,12 @@ public sealed class DiscoveredHost
     /// <summary>OUI(MAC 앞 3바이트) 기반 제조사.</summary>
     public string? Vendor { get; set; }
 
+    /// <summary>PC 이름(NetBIOS 컴퓨터명 또는 역방향 DNS). IP 관리대장의 기준.</summary>
+    public string? Hostname { get; set; }
+
+    /// <summary>모델명(주로 프린터, SNMP sysDescr 로 수집).</summary>
+    public string? Model { get; set; }
+
     /// <summary>ICMP 응답 TTL. NAT 뒤 추가 홉을 추정하는 데 사용.</summary>
     public int? Ttl { get; set; }
 
@@ -43,5 +49,17 @@ public enum DeviceCategory
     Router,      // 무단 공유기 (NAT)
     WirelessAp,  // 무선 AP
     VoipPhone,   // 인터넷 전화기
+    Printer,     // 프린터/복합기
+    Pc,          // 일반 PC (NetBIOS 이름 등으로 식별)
     Infrastructure, // 정상 스위치/방화벽/서버 등
+}
+
+/// <summary>학교 4개 분리망 구분 (IP 관리대장의 소속망).</summary>
+public enum SchoolNetwork
+{
+    Unknown,
+    TeacherWork,   // 교사 업무망
+    StudentWired,  // 학생 유선망
+    StudentWifi,   // 학생 무선망
+    Phone,         // 전화망
 }

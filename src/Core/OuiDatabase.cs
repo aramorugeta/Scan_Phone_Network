@@ -31,6 +31,24 @@ public static class OuiDatabase
         ["14:CC:20"] = new("TP-Link", DeviceCategory.Router),
         ["90:9A:4A"] = new("TP-Link", DeviceCategory.Router),
 
+        // --- 프린터/복합기 ---
+        ["00:1B:A9"] = new("Brother", DeviceCategory.Printer),
+        ["00:80:77"] = new("Brother", DeviceCategory.Printer),
+        ["00:00:48"] = new("Seiko Epson", DeviceCategory.Printer),
+        ["00:26:AB"] = new("Seiko Epson", DeviceCategory.Printer),
+        ["00:00:85"] = new("Canon", DeviceCategory.Printer),
+        ["00:1E:8F"] = new("Canon", DeviceCategory.Printer),
+        ["00:00:74"] = new("Ricoh", DeviceCategory.Printer),
+        ["00:21:5A"] = new("HP", DeviceCategory.Printer),
+        ["00:1B:78"] = new("HP", DeviceCategory.Printer),
+        ["3C:D9:2B"] = new("HP", DeviceCategory.Printer),
+        ["00:00:F0"] = new("Samsung Printer", DeviceCategory.Printer),
+        ["00:15:99"] = new("Samsung Printer", DeviceCategory.Printer),
+        ["00:20:6B"] = new("Kyocera", DeviceCategory.Printer),
+        ["00:C0:EE"] = new("Kyocera", DeviceCategory.Printer),
+        ["08:00:37"] = new("Fuji Xerox", DeviceCategory.Printer),
+        ["00:00:39"] = new("Konica Minolta", DeviceCategory.Printer),
+
         // --- VoIP 전화기 ---
         ["00:15:65"] = new("Yealink", DeviceCategory.VoipPhone),
         ["80:5E:C0"] = new("Yealink", DeviceCategory.VoipPhone),
@@ -83,6 +101,10 @@ public static class OuiDatabase
         if (v.Contains("yealink") || v.Contains("grandstream") || v.Contains("polycom")
             || v.Contains("snom") || v.Contains("moimstone"))
             return DeviceCategory.VoipPhone;
+        if (v.Contains("brother") || v.Contains("epson") || v.Contains("canon")
+            || v.Contains("ricoh") || v.Contains("kyocera") || v.Contains("xerox")
+            || v.Contains("konica") || v.Contains("lexmark"))
+            return DeviceCategory.Printer;
         if (v.Contains("tp-link") || v.Contains("tenda") || v.Contains("netis")
             || v.Contains("d-link") || v.Contains("iptime") || v.Contains("efm")
             || v.Contains("netgear") || v.Contains("xiaomi"))

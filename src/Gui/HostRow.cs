@@ -8,10 +8,11 @@ public sealed class HostRow
     public HostRow(DiscoveredHost h)
     {
         Ip = h.Ip.ToString();
+        Hostname = h.Hostname ?? "";
         Mac = h.Mac ?? "-";
         Category = CsvExporter.CategoryKo(h.Category);
         Confidence = h.Confidence;
-        Vendor = h.Vendor ?? "";
+        Vendor = CsvExporter.VendorModel(h);
         OpenPorts = string.Join(" ", h.OpenPorts);
         Evidence = string.Join("  |  ", h.Evidence);
         Source = h;
@@ -21,6 +22,7 @@ public sealed class HostRow
     }
 
     public string Ip { get; }
+    public string Hostname { get; }
     public string Mac { get; }
     public string Category { get; }
     public int Confidence { get; }

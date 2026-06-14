@@ -12,7 +12,8 @@ namespace ScanPhoneNetwork.Probes;
 /// </summary>
 public static class PortProbe
 {
-    public static readonly int[] InterestingPorts = { 80, 443, 5060, 5061, 8080, 23 };
+    public static readonly int[] InterestingPorts =
+        { 80, 443, 5060, 5061, 8080, 23, 9100, 515, 631 }; // 9100/515/631 = 프린터
 
     public sealed record Result(List<int> OpenPorts, List<string> Banners);
 

@@ -13,6 +13,10 @@ public sealed class ScanReport
     public DateTime StartedAt { get; init; } = DateTime.Now;
     public DateTime FinishedAt { get; set; }
     public string TargetRange { get; init; } = "";
+
+    /// <summary>이 스캔이 어느 망인지(IP 관리대장 소속망). 사용자가 지정.</summary>
+    public SchoolNetwork Network { get; set; } = SchoolNetwork.Unknown;
+
     public List<DiscoveredHost> Hosts { get; init; } = new();
 
     /// <summary>업무망에 있으면 안 되는(=의심) 장비만 추림.</summary>
@@ -29,7 +33,8 @@ public sealed class Scanner
     public async Task<ScanReport> RunAsync(
         string? cidr,
         IProgress<ScanProgress>? progress = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        SchoolNetwork schoolNetwork = SchoolNetwork.Unknown)
     {
         IPAddress network, mask;
         string label;
@@ -49,7 +54,7 @@ public sealed class Scanner
             label = $"{sub.LocalIp}/{MaskToPrefix(sub.Mask)} ({sub.InterfaceName})";
         }
 
-        var report = new ScanReport { TargetRange = label };
+        var report = new ScanReport { TargetRange = label, Network = schoolNetwork };
         var targets = NetworkInfo.EnumerateHosts(network, mask).ToList();
 
         // 1) DHCP/SSDP 는 브로드캐스트라 호스트 목록과 별개로 1회씩
@@ -86,10 +91,30 @@ public sealed class Scanner
                 h.SsdpGateway = true;
                 if (!string.IsNullOrEmpty(banner)) h.Banners.Add("SSDP " + banner);
             }
+            // 프린터 포트가 열렸으면 SNMP 로 모델명 수집
+            if (h.OpenPorts.Contains(9100) || h.OpenPorts.Contains(515) || h.OpenPorts.Contains(631))
+                h.Model = await SnmpProbe.GetSysDescrAsync(h.Ip);
             progress?.Report(new ScanProgress("포트/배너 프로브", ++done, hosts.Count));
         }
 
-        // 5) 분류
+        // 5) PC 이름 해석 (NetBIOS/DNS) — 병렬
+        progress?.Report(new ScanProgress("PC 이름 조회", 0, hosts.Count));
+        using (var gate = new SemaphoreSlim(32))
+        {
+            int hdone = 0;
+            await Task.WhenAll(hosts.Select(async h =>
+            {
+                await gate.WaitAsync(ct);
+                try { h.Hostname = await HostnameResolver.ResolveAsync(h.Ip); }
+                finally
+                {
+                    gate.Release();
+                    progress?.Report(new ScanProgress("PC 이름 조회", Interlocked.Increment(ref hdone), hosts.Count));
+                }
+            }));
+        }
+
+        // 6) 분류
         int? baseline = hosts.Where(h => h.Ttl is not null)
             .GroupBy(h => h.Ttl).OrderByDescending(g => g.Count())
             .FirstOrDefault()?.Key;

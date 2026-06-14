@@ -39,15 +39,16 @@ public static class CsvExporter
             sb.AppendLine();
         }
 
-        sb.AppendLine("IP,MAC,종류,신뢰도(%),제조사,열린포트,근거");
+        sb.AppendLine("IP,PC이름,MAC,종류,신뢰도(%),제조사,열린포트,근거");
 
         foreach (var h in report.Hosts)
         {
             sb.Append(Csv(h.Ip.ToString())).Append(',');
+            sb.Append(Csv(h.Hostname ?? "")).Append(',');
             sb.Append(Csv(h.Mac ?? "")).Append(',');
             sb.Append(Csv(CategoryKo(h.Category))).Append(',');
             sb.Append(h.Confidence).Append(',');
-            sb.Append(Csv(h.Vendor ?? "")).Append(',');
+            sb.Append(Csv(VendorModel(h))).Append(',');
             sb.Append(Csv(string.Join(" ", h.OpenPorts))).Append(',');
             sb.Append(Csv(string.Join(" / ", h.Evidence)));
             sb.AppendLine();
@@ -62,8 +63,28 @@ public static class CsvExporter
         DeviceCategory.Router => "공유기(의심)",
         DeviceCategory.WirelessAp => "무선AP(의심)",
         DeviceCategory.VoipPhone => "인터넷전화기",
+        DeviceCategory.Printer => "프린터",
+        DeviceCategory.Pc => "PC",
         DeviceCategory.Infrastructure => "인프라",
         _ => "미상",
+    };
+
+    /// <summary>제조사 + 모델명을 합친 표시 문자열(프린터 모델 노출).</summary>
+    public static string VendorModel(DiscoveredHost h)
+    {
+        var parts = new[] { h.Vendor, h.Model }
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct();
+        return string.Join(" · ", parts);
+    }
+
+    public static string NetworkKo(SchoolNetwork n) => n switch
+    {
+        SchoolNetwork.TeacherWork => "교사 업무망",
+        SchoolNetwork.StudentWired => "학생 유선망",
+        SchoolNetwork.StudentWifi => "학생 무선망",
+        SchoolNetwork.Phone => "전화망",
+        _ => "(미지정)",
     };
 
     private static string Csv(string s)

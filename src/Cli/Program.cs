@@ -8,7 +8,7 @@ string? ouiPath = GetOpt("--oui");
 
 // 옵션 값으로 소비된 인덱스를 제외하고 남는 위치 인자 = 대상 대역(CIDR)
 var consumed = new HashSet<int>();
-MarkOpt("--csv"); MarkOpt("--oui");
+MarkOpt("--csv"); MarkOpt("--oui"); MarkOpt("--ledger");
 string? cidr = args.Where((a, i) => !a.StartsWith("--") && !consumed.Contains(i)).FirstOrDefault();
 
 if (ouiPath is not null)
@@ -27,12 +27,11 @@ try
     Console.WriteLine($"\n대상: {report.TargetRange}");
     Console.WriteLine($"발견 호스트: {report.Hosts.Count}대 / 의심 장비: {report.Suspicious.Count()}대\n");
 
-    Console.WriteLine($"{"IP",-16}{"MAC",-20}{"종류",-14}{"신뢰도",-8}제조사");
-    Console.WriteLine(new string('-', 90));
+    Console.WriteLine($"{"IP",-16}{"PC이름",-18}{"MAC",-20}{"종류",-12}{"신뢰도",-7}제조사");
+    Console.WriteLine(new string('-', 100));
     foreach (var h in report.Hosts)
     {
-        Console.WriteLine($"{h.Ip,-16}{h.Mac ?? "-",-20}{CsvExporter.CategoryKo(h.Category),-14}{h.Confidence + "%",-8}{h.Vendor ?? ""}");
-        foreach (var ev in h.Evidence) Console.WriteLine($"    · {ev}");
+        Console.WriteLine($"{h.Ip,-16}{h.Hostname ?? "-",-18}{h.Mac ?? "-",-20}{CsvExporter.CategoryKo(h.Category),-12}{h.Confidence + "%",-7}{CsvExporter.VendorModel(h)}");
     }
 
     // 4개 망 분리 원칙 위반 상세 보고
@@ -44,6 +43,13 @@ try
     {
         CsvExporter.Save(report, csvPath);
         Console.WriteLine($"CSV 저장: {csvPath}");
+    }
+
+    string? ledgerPath = GetOpt("--ledger");
+    if (ledgerPath is not null)
+    {
+        LedgerExporter.Save(report, ledgerPath, append: true);
+        Console.WriteLine($"IP 관리대장 저장(누적): {ledgerPath}");
     }
 }
 catch (Exception ex)

@@ -65,7 +65,7 @@ public partial class MainWindow : Window
         try
         {
             string? cidr = string.IsNullOrWhiteSpace(TargetBox.Text) ? null : TargetBox.Text!.Trim();
-            var report = await new Scanner().RunAsync(cidr, progress, _scanCts.Token);
+            var report = await new Scanner().RunAsync(cidr, progress, _scanCts.Token, SelectedNetwork());
             ShowReport(report);
             StatusText.Text = $"완료 · {report.TargetRange}";
         }
@@ -96,7 +96,17 @@ public partial class MainWindow : Window
 
         ReportButton.IsEnabled = violations.Count > 0;
         CsvButton.IsEnabled = report.Hosts.Count > 0;
+        LedgerButton.IsEnabled = report.Hosts.Count > 0;
     }
+
+    private SchoolNetwork SelectedNetwork() => NetCombo.SelectedIndex switch
+    {
+        1 => SchoolNetwork.TeacherWork,
+        2 => SchoolNetwork.StudentWired,
+        3 => SchoolNetwork.StudentWifi,
+        4 => SchoolNetwork.Phone,
+        _ => SchoolNetwork.Unknown,
+    };
 
     private void SetScanning(bool on)
     {
@@ -141,6 +151,25 @@ public partial class MainWindow : Window
             CsvExporter.Save(_lastReport, file.Path.LocalPath);
             StatusText.Text = "저장 완료: " + file.Path.LocalPath;
         }
+    }
+
+    // ---------- IP 관리대장 ----------
+
+    private async void OnLedgerClick(object? sender, RoutedEventArgs e)
+    {
+        if (_lastReport is null) return;
+        _lastReport.Network = SelectedNetwork();  // 내보내기 시점의 망 선택 반영
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            SuggestedFileName = "IP관리대장.csv",
+            FileTypeChoices = new[] { new FilePickerFileType("CSV") { Patterns = new[] { "*.csv" } } },
+        });
+        if (file is null) return;
+
+        string path = file.Path.LocalPath;
+        bool append = File.Exists(path);   // 기존 파일이면 이어붙여 4개 망 누적
+        LedgerExporter.Save(_lastReport, path, append);
+        StatusText.Text = (append ? "관리대장 누적 저장: " : "관리대장 저장: ") + path;
     }
 
     // ---------- 감시 모드 ----------

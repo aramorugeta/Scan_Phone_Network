@@ -49,6 +49,14 @@ public static class Classifier
             h.Evidence.Add("SIP 포트(5060/5061) 열림");
         }
 
+        // 4-1) 프린터 포트(9100/515/631)
+        if (h.OpenPorts.Contains(9100) || h.OpenPorts.Contains(515) || h.OpenPorts.Contains(631))
+        {
+            if (h.Category is DeviceCategory.Unknown or DeviceCategory.Pc)
+                h.Category = DeviceCategory.Printer;
+            h.Evidence.Add("프린터 포트(9100/515/631) 열림");
+        }
+
         // 5) HTTP/SIP 배너 키워드
         foreach (var b in h.Banners)
         {
@@ -74,6 +82,13 @@ public static class Classifier
         {
             h.Confidence += 10;
             h.Evidence.Add($"TTL {t} < 기준 {bl} → 추가 홉(라우팅 장비) 의심");
+        }
+
+        // 7) 그 외 PC 이름이 잡힌 미상 장비 = 일반 PC (관리대장용)
+        if (h.Category is DeviceCategory.Unknown && !string.IsNullOrEmpty(h.Hostname))
+        {
+            h.Category = DeviceCategory.Pc;
+            h.Evidence.Add($"NetBIOS/DNS 이름 = {h.Hostname}");
         }
 
         if (h.Confidence > 100) h.Confidence = 100;

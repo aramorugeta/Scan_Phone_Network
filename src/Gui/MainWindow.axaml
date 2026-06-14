@@ -10,16 +10,26 @@
         <!-- 기본 도구막대 -->
         <Border Grid.Row="0" Background="#F3F4F6" CornerRadius="6" Padding="8">
             <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="NetCombo" Width="130" Height="36" SelectedIndex="0"
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="이번에 점검하는 망을 고르세요(관리대장 소속망)">
+                    <ComboBoxItem>자동</ComboBoxItem>
+                    <ComboBoxItem>교사 업무망</ComboBoxItem>
+                    <ComboBoxItem>학생 유선망</ComboBoxItem>
+                    <ComboBoxItem>학생 무선망</ComboBoxItem>
+                    <ComboBoxItem>전화망</ComboBoxItem>
+                </ComboBox>
                 <Button x:Name="ScanButton" Content="내 네트워크 스캔" Click="OnScanClick"
-                        FontWeight="Bold" Height="36"/>
+                        FontWeight="Bold" Height="36" Margin="6,0,0,0"/>
                 <Button x:Name="StopButton" Content="중지" Click="OnStopClick"
                         IsEnabled="False" Height="36" Margin="6,0,0,0"/>
                 <Button x:Name="ReportButton" Content="⚠ 상세 보고" Click="OnReportClick"
                         IsEnabled="False" Height="36" Margin="16,0,0,0"/>
                 <Button x:Name="CsvButton" Content="CSV 저장" Click="OnExportClick"
                         IsEnabled="False" Height="36" Margin="6,0,0,0"/>
-                <TextBlock Text="현재 연결된 네트워크를 점검합니다" Foreground="Gray"
-                           VerticalAlignment="Center" Margin="16,0,0,0"/>
+                <Button x:Name="LedgerButton" Content="IP 관리대장" Click="OnLedgerClick"
+                        IsEnabled="False" Height="36" Margin="6,0,0,0"
+                        ToolTip.Tip="같은 파일을 고르면 4개 망을 한 대장에 누적합니다"/>
             </StackPanel>
         </Border>
 
@@ -61,8 +71,9 @@
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="IP" Binding="{Binding Ip}" Width="130"/>
-                <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="150"/>
+                <DataGridTextColumn Header="IP" Binding="{Binding Ip}" Width="120"/>
+                <DataGridTextColumn Header="PC이름" Binding="{Binding Hostname}" Width="150"/>
+                <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="140"/>
                 <DataGridTextColumn Header="종류" Binding="{Binding Category}" Width="110"/>
                 <DataGridTextColumn Header="신뢰도%" Binding="{Binding Confidence}" Width="75"/>
                 <DataGridTextColumn Header="제조사" Binding="{Binding Vendor}" Width="150"/>
