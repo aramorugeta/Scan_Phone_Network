@@ -65,7 +65,7 @@ public partial class MainWindow : Window
         try
         {
             string? cidr = string.IsNullOrWhiteSpace(TargetBox.Text) ? null : TargetBox.Text!.Trim();
-            var report = await new Scanner().RunAsync(cidr, progress, _scanCts.Token, SelectedNetwork());
+            var report = await new Scanner().RunAsync(cidr, progress, _scanCts.Token, SelectedNetwork(), SelectedPrefix());
             ShowReport(report);
             StatusText.Text = $"완료 · {report.TargetRange}";
         }
@@ -106,6 +106,14 @@ public partial class MainWindow : Window
         3 => SchoolNetwork.StudentWifi,
         4 => SchoolNetwork.Phone,
         _ => SchoolNetwork.Unknown,
+    };
+
+    /// <summary>스캔 범위 콤보 → 프리픽스(/24·/23·/22). 기본 /23.</summary>
+    private int SelectedPrefix() => ScopeCombo.SelectedIndex switch
+    {
+        0 => 24,
+        2 => 22,
+        _ => 23,
     };
 
     private void SetScanning(bool on)
@@ -183,6 +191,8 @@ public partial class MainWindow : Window
     private void StartMonitor()
     {
         _monitor.TargetCidr = string.IsNullOrWhiteSpace(TargetBox.Text) ? null : TargetBox.Text!.Trim();
+        _monitor.AutoPrefix = SelectedPrefix();
+        _monitor.Network = SelectedNetwork();
         if (int.TryParse(IntervalBox.Text, out int min) && min > 0)
             _monitor.Interval = TimeSpan.FromMinutes(min);
         _monitor.Start();

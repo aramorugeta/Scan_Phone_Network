@@ -51,6 +51,14 @@
             <TextBox x:Name="IntervalBox" Text="10" Width="50"/>
             <CheckBox x:Name="AutoStartCheck" Content="윈도우 시작 시 자동 실행(감시)"
                       Margin="20,0,0,0" IsCheckedChanged="OnAutoStartToggle"/>
+            <TextBlock Text="스캔 범위:" VerticalAlignment="Center" Margin="24,0,4,0"/>
+            <ComboBox x:Name="ScopeCombo" Width="160" SelectedIndex="1"
+                      VerticalAlignment="Center"
+                      ToolTip.Tip="학교 구성이 /23이라 기본은 /23. 특별한 경우만 /22">
+                <ComboBoxItem>좁게 /24 (현재 서브넷)</ComboBoxItem>
+                <ComboBoxItem>기본 /23 (255.255.254.0)</ComboBoxItem>
+                <ComboBoxItem>넓게 /22 (255.255.252.0)</ComboBoxItem>
+            </ComboBox>
         </StackPanel>
 
         <ProgressBar Grid.Row="3" x:Name="Progress" Minimum="0" Maximum="100"

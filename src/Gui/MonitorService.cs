@@ -16,6 +16,12 @@ public sealed class MonitorService
     public string? TargetCidr { get; set; }
     public TimeSpan Interval { get; set; } = TimeSpan.FromMinutes(10);
 
+    /// <summary>자동 탐지 시 스캔 범위 프리픽스(기본 /23).</summary>
+    public int AutoPrefix { get; set; } = Scanner.DefaultAutoPrefix;
+
+    /// <summary>관리대장 소속망(감시 결과에도 라벨 부여).</summary>
+    public SchoolNetwork Network { get; set; } = SchoolNetwork.Unknown;
+
     /// <summary>스캔 1회 완료 시(결과 전체).</summary>
     public event Action<ScanReport>? ScanCompleted;
     /// <summary>새 의심 장비 발견 시(경고 대상).</summary>
@@ -63,7 +69,7 @@ public sealed class MonitorService
             try
             {
                 StatusChanged?.Invoke($"스캔 시작 {DateTime.Now:HH:mm:ss}");
-                var report = await scanner.RunAsync(TargetCidr, null, ct);
+                var report = await scanner.RunAsync(TargetCidr, null, ct, Network, AutoPrefix);
                 ScanCompleted?.Invoke(report);
 
                 foreach (var h in report.Suspicious)

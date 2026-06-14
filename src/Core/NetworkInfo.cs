@@ -71,6 +71,21 @@ public static class NetworkInfo
             yield return FromUInt(a);
     }
 
+    /// <summary>프리픽스(예 23) → 서브넷마스크.</summary>
+    public static IPAddress PrefixToMask(int prefix)
+    {
+        uint m = prefix <= 0 ? 0u : prefix >= 32 ? 0xFFFFFFFF : 0xFFFFFFFF << (32 - prefix);
+        return FromUInt(m);
+    }
+
+    /// <summary>서브넷마스크 → 프리픽스 비트 수.</summary>
+    public static int MaskToPrefix(IPAddress mask) =>
+        mask.GetAddressBytes().Sum(b => System.Numerics.BitOperations.PopCount((uint)b));
+
+    /// <summary>ip 를 mask 로 깎은 네트워크 주소 문자열.</summary>
+    public static string NetworkBase(IPAddress ip, IPAddress mask) =>
+        FromUInt(ToUInt(ip) & ToUInt(mask)).ToString();
+
     private static uint ToUInt(IPAddress ip)
     {
         var b = ip.GetAddressBytes();

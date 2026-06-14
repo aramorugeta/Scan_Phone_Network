@@ -8,8 +8,9 @@ string? ouiPath = GetOpt("--oui");
 
 // 옵션 값으로 소비된 인덱스를 제외하고 남는 위치 인자 = 대상 대역(CIDR)
 var consumed = new HashSet<int>();
-MarkOpt("--csv"); MarkOpt("--oui"); MarkOpt("--ledger");
+MarkOpt("--csv"); MarkOpt("--oui"); MarkOpt("--ledger"); MarkOpt("--prefix");
 string? cidr = args.Where((a, i) => !a.StartsWith("--") && !consumed.Contains(i)).FirstOrDefault();
+int autoPrefix = int.TryParse(GetOpt("--prefix"), out int pfx) ? pfx : Scanner.DefaultAutoPrefix;
 
 if (ouiPath is not null)
 {
@@ -22,7 +23,7 @@ var progress = new Progress<ScanProgress>(p =>
 
 try
 {
-    var report = await new Scanner().RunAsync(cidr, progress);
+    var report = await new Scanner().RunAsync(cidr, progress, default, SchoolNetwork.Unknown, autoPrefix);
 
     Console.WriteLine($"\n대상: {report.TargetRange}");
     Console.WriteLine($"발견 호스트: {report.Hosts.Count}대 / 의심 장비: {report.Suspicious.Count()}대\n");

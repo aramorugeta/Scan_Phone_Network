@@ -30,11 +30,20 @@ public sealed class ScanReport
 public sealed class Scanner
 {
     /// <param name="cidr">"10.20.30.0/24" 형식. null 이면 실행 PC 대역 자동 탐지.</param>
+    /// <summary>자동 탐지 시 기본 스캔 프리픽스. 학교가 /23(255.255.254.0)로 구성하므로 23 기본.</summary>
+    public const int DefaultAutoPrefix = 23;
+
+    /// <param name="autoPrefix">
+    /// 자동 탐지 시 스캔 범위 프리픽스(기본 23=/23). 특별한 경우 22=/22 까지.
+    /// PC 실제 마스크가 더 넓으면(작은 숫자) 그쪽을 따른다(과소 스캔 방지).
+    /// cidr 을 직접 주면 무시된다.
+    /// </param>
     public async Task<ScanReport> RunAsync(
         string? cidr,
         IProgress<ScanProgress>? progress = null,
         CancellationToken ct = default,
-        SchoolNetwork schoolNetwork = SchoolNetwork.Unknown)
+        SchoolNetwork schoolNetwork = SchoolNetwork.Unknown,
+        int autoPrefix = DefaultAutoPrefix)
     {
         IPAddress network, mask;
         string label;
@@ -49,9 +58,12 @@ public sealed class Scanner
         {
             var sub = NetworkInfo.GetActiveSubnet()
                 ?? throw new InvalidOperationException("활성 인터페이스를 찾지 못했습니다. 대역을 직접 지정하세요.");
+            // 학교가 /23 으로 구성하고 빈 대역에 무단 라우터를 두는 경우가 있어,
+            // PC 마스크(/24)보다 넓혀 점검한다. 단 PC 마스크가 더 넓으면 그쪽을 따름.
+            int eff = Math.Min(autoPrefix, NetworkInfo.MaskToPrefix(sub.Mask));
             network = sub.LocalIp;
-            mask = sub.Mask;
-            label = $"{sub.LocalIp}/{MaskToPrefix(sub.Mask)} ({sub.InterfaceName})";
+            mask = NetworkInfo.PrefixToMask(eff);
+            label = $"{NetworkInfo.NetworkBase(sub.LocalIp, mask)}/{eff} (자동·{sub.InterfaceName})";
         }
 
         var report = new ScanReport { TargetRange = label, Network = schoolNetwork };
@@ -150,11 +162,5 @@ public sealed class Scanner
         foreach (var ip in extra)
             if (have.Add(ip.ToString()))
                 hosts.Add(new DiscoveredHost { Ip = ip });
-    }
-
-    private static int MaskToPrefix(IPAddress mask)
-    {
-        return mask.GetAddressBytes()
-            .Sum(b => System.Numerics.BitOperations.PopCount(b));
     }
 }
