@@ -57,6 +57,13 @@ public sealed class Scanner
         var report = new ScanReport { TargetRange = label, Network = schoolNetwork };
         var targets = NetworkInfo.EnumerateHosts(network, mask).ToList();
 
+        // 어떤 마스크든 처리(/0~/32). 255.255.254.0(/23,510개)·/22(1022개)까지 정상.
+        // 실수로 /18 이상 거대 대역을 넣은 경우만 차단.
+        const int MaxHosts = 8192;
+        if (targets.Count > MaxHosts)
+            throw new InvalidOperationException(
+                $"대상이 {targets.Count}개로 너무 큽니다(>{MaxHosts}). /24~/22 단위로 좁혀 지정하세요.");
+
         // 1) DHCP/SSDP 는 브로드캐스트라 호스트 목록과 별개로 1회씩
         progress?.Report(new ScanProgress("DHCP 서버 탐지", 0, 1));
         var dhcpServers = await DhcpProbe.FindDhcpServersAsync();
@@ -78,23 +85,34 @@ public sealed class Scanner
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             HostDiscovery.ResolveMacs(hosts);
 
-        // 4) 호스트별 포트/배너 프로브
+        // 4) 호스트별 포트/배너 프로브 — 병렬(대역 넓어도 빠르게)
         int done = 0;
-        foreach (var h in hosts)
+        using (var probeGate = new SemaphoreSlim(24))
         {
-            ct.ThrowIfCancellationRequested();
-            var pr = await PortProbe.ProbeAsync(h.Ip);
-            h.OpenPorts.AddRange(pr.OpenPorts);
-            h.Banners.AddRange(pr.Banners);
-            if (ssdp.TryGetValue(h.Ip, out var banner))
+            await Task.WhenAll(hosts.Select(async h =>
             {
-                h.SsdpGateway = true;
-                if (!string.IsNullOrEmpty(banner)) h.Banners.Add("SSDP " + banner);
-            }
-            // 프린터 포트가 열렸으면 SNMP 로 모델명 수집
-            if (h.OpenPorts.Contains(9100) || h.OpenPorts.Contains(515) || h.OpenPorts.Contains(631))
-                h.Model = await SnmpProbe.GetSysDescrAsync(h.Ip);
-            progress?.Report(new ScanProgress("포트/배너 프로브", ++done, hosts.Count));
+                await probeGate.WaitAsync(ct);
+                try
+                {
+                    var pr = await PortProbe.ProbeAsync(h.Ip);
+                    h.OpenPorts.AddRange(pr.OpenPorts);
+                    h.Banners.AddRange(pr.Banners);
+                    if (ssdp.TryGetValue(h.Ip, out var banner))
+                    {
+                        h.SsdpGateway = true;
+                        if (!string.IsNullOrEmpty(banner)) h.Banners.Add("SSDP " + banner);
+                    }
+                    // 프린터 포트가 열렸으면 SNMP 로 모델명 수집
+                    if (h.OpenPorts.Contains(9100) || h.OpenPorts.Contains(515) || h.OpenPorts.Contains(631))
+                        h.Model = await SnmpProbe.GetSysDescrAsync(h.Ip);
+                }
+                finally
+                {
+                    probeGate.Release();
+                    progress?.Report(new ScanProgress("포트/배너 프로브",
+                        Interlocked.Increment(ref done), hosts.Count));
+                }
+            }));
         }
 
         // 5) PC 이름 해석 (NetBIOS/DNS) — 병렬
