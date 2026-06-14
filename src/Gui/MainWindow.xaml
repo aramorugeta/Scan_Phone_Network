@@ -15,7 +15,9 @@
                             FontWeight="Bold" Click="OnScanClick"/>
                     <Button x:Name="StopButton" Content="중지" Width="60" Height="36" Margin="6,0,0,0"
                             Click="OnStopClick" IsEnabled="False"/>
-                    <Button x:Name="CsvButton" Content="CSV 저장" Width="90" Height="36" Margin="16,0,0,0"
+                    <Button x:Name="ReportButton" Content="⚠ 상세 보고" Width="110" Height="36" Margin="16,0,0,0"
+                            Click="OnReportClick" IsEnabled="False"/>
+                    <Button x:Name="CsvButton" Content="CSV 저장" Width="90" Height="36" Margin="6,0,0,0"
                             Click="OnExportClick" IsEnabled="False"/>
                     <TextBlock Text="현재 연결된 네트워크를 점검합니다" Foreground="Gray"
                                VerticalAlignment="Center" Margin="16,0,0,0"/>

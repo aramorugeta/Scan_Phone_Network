@@ -35,10 +35,15 @@ try
         foreach (var ev in h.Evidence) Console.WriteLine($"    · {ev}");
     }
 
+    // 4개 망 분리 원칙 위반 상세 보고
+    var violations = PolicyAnalyzer.Analyze(report);
+    Console.WriteLine();
+    Console.WriteLine(PolicyAnalyzer.FormatReport(report, violations));
+
     if (csvPath is not null)
     {
         CsvExporter.Save(report, csvPath);
-        Console.WriteLine($"\nCSV 저장: {csvPath}");
+        Console.WriteLine($"CSV 저장: {csvPath}");
     }
 }
 catch (Exception ex)

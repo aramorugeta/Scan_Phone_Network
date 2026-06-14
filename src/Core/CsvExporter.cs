@@ -14,6 +14,31 @@ public static class CsvExporter
         sb.AppendLine($"# 종료,{report.FinishedAt:yyyy-MM-dd HH:mm:ss}");
         sb.AppendLine($"# 발견호스트,{report.Hosts.Count},의심장비,{report.Suspicious.Count()}");
         sb.AppendLine();
+
+        // 정책 위반 상세(혼선/비인가 장비)
+        var violations = PolicyAnalyzer.Analyze(report);
+        sb.AppendLine($"# 정책위반,{violations.Count}건");
+        if (violations.Count > 0)
+        {
+            sb.AppendLine("심각도,유형,제목,IP,MAC,제조사,원칙,조치");
+            foreach (var v in violations)
+            {
+                string sev = v.Severity switch
+                { Severity.Critical => "심각", Severity.Warning => "주의", _ => "정보" };
+                string kind = v.Kind == ViolationKind.CrossLink ? "혼선" : "비인가장비";
+                foreach (var h in v.Hosts)
+                {
+                    sb.Append(Csv(sev)).Append(',').Append(Csv(kind)).Append(',')
+                      .Append(Csv(v.Title)).Append(',')
+                      .Append(Csv(h.Ip.ToString())).Append(',').Append(Csv(h.Mac ?? "")).Append(',')
+                      .Append(Csv(h.Vendor ?? "")).Append(',')
+                      .Append(Csv(v.Principle)).Append(',').Append(Csv(v.Action));
+                    sb.AppendLine();
+                }
+            }
+            sb.AppendLine();
+        }
+
         sb.AppendLine("IP,MAC,종류,신뢰도(%),제조사,열린포트,근거");
 
         foreach (var h in report.Hosts)

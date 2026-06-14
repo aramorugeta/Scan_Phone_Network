@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private readonly MonitorService _monitor;
     private CancellationTokenSource? _scanCts;
     private ScanReport? _lastReport;
+    private string _reportText = "";
     private WinForms.NotifyIcon? _tray;
     private System.Drawing.Icon? _appIcon;
 
@@ -100,9 +101,50 @@ public partial class MainWindow : Window
         _rows.Clear();
         foreach (var h in report.Hosts) _rows.Add(new HostRow(h));
         Progress.Value = 100;
-        int sus = report.Suspicious.Count();
-        SummaryText.Text = sus > 0 ? $"⚠ 의심 장비 {sus}대" : "의심 장비 없음";
+
+        // 4개 망 분리 원칙 위반 분석
+        var violations = PolicyAnalyzer.Analyze(report);
+        _reportText = PolicyAnalyzer.FormatReport(report, violations);
+
+        if (violations.Count > 0)
+        {
+            int cross = violations.Count(v => v.Kind == ViolationKind.CrossLink);
+            int dev = violations.Count(v => v.Kind == ViolationKind.UnauthorizedDevice);
+            SummaryText.Text = $"⚠ 이상 {violations.Count}건 (혼선 {cross} · 비인가 장비 {dev})";
+        }
+        else
+        {
+            SummaryText.Text = "✅ 이상 없음";
+        }
+
+        ReportButton.IsEnabled = violations.Count > 0;
         CsvButton.IsEnabled = report.Hosts.Count > 0;
+    }
+
+    private void OnReportClick(object sender, RoutedEventArgs e) => ShowReportWindow(_reportText);
+
+    /// <summary>상세 보고 텍스트를 스크롤 가능한 창으로 표시.</summary>
+    private void ShowReportWindow(string text)
+    {
+        var box = new TextBox
+        {
+            Text = text,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            FontFamily = new System.Windows.Media.FontFamily("Consolas, D2Coding, monospace"),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(12),
+        };
+        new Window
+        {
+            Title = "업무망 점검 상세 보고",
+            Width = 720,
+            Height = 560,
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = box,
+        }.ShowDialog();
     }
 
     private void SetScanning(bool on)
@@ -147,10 +189,14 @@ public partial class MainWindow : Window
 
     private void AlertNewDevice(DiscoveredHost h)
     {
-        string msg = $"새 의심 장비 발견\nIP: {h.Ip}\nMAC: {h.Mac ?? "-"}\n" +
+        // 혼선(망 간 연결) vs 비인가 장비 구분
+        bool crossLink = h.Category == DeviceCategory.VoipPhone
+            || (h.DhcpServer && h.Category is not (DeviceCategory.Router or DeviceCategory.WirelessAp));
+        string kind = crossLink ? "망 혼선 의심" : "비인가 장비 연결";
+        string msg = $"유형: {kind}\nIP: {h.Ip}\nMAC: {h.Mac ?? "-"}\n" +
                      $"종류: {CsvExporter.CategoryKo(h.Category)} ({h.Confidence}%)\n" +
                      $"제조사: {h.Vendor ?? "-"}";
-        _tray?.ShowBalloonTip(8000, "⚠ 업무망 무단 장비 경고", msg, WinForms.ToolTipIcon.Warning);
+        _tray?.ShowBalloonTip(8000, "⚠ 업무망 이상 감지", msg, WinForms.ToolTipIcon.Warning);
         System.Media.SystemSounds.Exclamation.Play();
     }
 
