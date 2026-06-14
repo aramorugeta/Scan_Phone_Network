@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon-256.png" width="128" height="128" alt="업무망 점검기 아이콘"/>
+</p>
+
 # 업무망 무단 장비 점검기 (Scan_Phone_Network)
 
 학교 **업무망**에 무단으로 연결된 장비를 자동으로 찾아내는 도구입니다.

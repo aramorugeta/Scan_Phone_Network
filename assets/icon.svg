@@ -1,0 +1,35 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B8DEF"/>
+      <stop offset="1" stop-color="#2F5FC9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 배경: teaveloper 포털 공통 파랑 그라데이션 + 둥근 사각 -->
+  <rect x="0" y="0" width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- 네트워크 장비 타일 (흰 테두리 파스텔) — seat-shuffler 패밀리 룩 -->
+  <!-- 정상 장비(하늘색) 3개 -->
+  <rect x="170" y="200" width="260" height="200" rx="30" fill="#E3EEFF" stroke="#FFFFFF" stroke-width="6"/>
+  <rect x="170" y="624" width="260" height="200" rx="30" fill="#E3EEFF" stroke="#FFFFFF" stroke-width="6"/>
+  <rect x="594" y="200" width="260" height="200" rx="30" fill="#E3EEFF" stroke="#FFFFFF" stroke-width="6"/>
+
+  <!-- 무단 장비(분홍) 1개 : 작은 WiFi 글리프 + 경고 배지 -->
+  <rect x="594" y="624" width="260" height="200" rx="30" fill="#FCDDEA" stroke="#FFFFFF" stroke-width="6"/>
+  <g fill="none" stroke="#21468B" stroke-width="16" stroke-linecap="round">
+    <path d="M676 742 A70 70 0 0 1 772 742"/>
+    <path d="M700 766 A36 36 0 0 1 748 766"/>
+  </g>
+  <circle cx="724" cy="784" r="13" fill="#21468B"/>
+  <!-- 경고 배지 -->
+  <circle cx="838" cy="616" r="44" fill="#21468B" stroke="#FFFFFF" stroke-width="8"/>
+  <rect x="830" y="592" width="16" height="30" rx="8" fill="#FFFFFF"/>
+  <circle cx="838" cy="636" r="9" fill="#FFFFFF"/>
+
+  <!-- 중앙 흰 원반 + 네이비 돋보기(스캔/탐지) -->
+  <circle cx="512" cy="512" r="118" fill="#FFFFFF"/>
+  <circle cx="496" cy="496" r="50" fill="none" stroke="#21468B" stroke-width="20"/>
+  <rect x="528" y="528" width="70" height="28" rx="14"
+        transform="rotate(45 528 528)" fill="#21468B"/>
+</svg>

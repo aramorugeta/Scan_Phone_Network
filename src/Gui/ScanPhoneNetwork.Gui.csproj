@@ -11,6 +11,7 @@
     <RootNamespace>ScanPhoneNetwork.Gui</RootNamespace>
     <AssemblyName>업무망점검기</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 

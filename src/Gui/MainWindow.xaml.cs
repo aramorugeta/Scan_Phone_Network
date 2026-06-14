@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _scanCts;
     private ScanReport? _lastReport;
     private WinForms.NotifyIcon? _tray;
+    private System.Drawing.Icon? _appIcon;
 
     private static string AllowListPath =>
         Path.Combine(AppContext.BaseDirectory, "allowlist.json");
@@ -33,6 +34,7 @@ public partial class MainWindow : Window
         _monitor.StatusChanged += s => Dispatcher.Invoke(() => StatusText.Text = s);
 
         AutoStartCheck.IsChecked = AutoStart.IsEnabled();
+        LoadAppIcon();
         SetupTray();
 
         if (startInMonitorMode) MonitorCheck.IsChecked = true;
@@ -165,11 +167,27 @@ public partial class MainWindow : Window
 
     // ---------- 트레이 ----------
 
+    /// <summary>exe 에 내장된 앱 아이콘을 창(작업표시줄)·트레이에 사용.</summary>
+    private void LoadAppIcon()
+    {
+        try
+        {
+            var path = Environment.ProcessPath;
+            if (path is null) return;
+            _appIcon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+            if (_appIcon is not null)
+                Icon = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                    _appIcon.Handle, System.Windows.Int32Rect.Empty,
+                    System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+        }
+        catch { /* 아이콘 없으면 기본값 사용 */ }
+    }
+
     private void SetupTray()
     {
         _tray = new WinForms.NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Shield,
+            Icon = _appIcon ?? System.Drawing.SystemIcons.Shield,
             Visible = true,
             Text = "업무망 점검기",
         };
