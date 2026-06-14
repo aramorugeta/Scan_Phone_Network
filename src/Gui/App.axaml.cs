@@ -15,11 +15,17 @@ public partial class App : Application
             bool monitor = desktop.Args?.Any(a => a.Equals("--monitor", StringComparison.OrdinalIgnoreCase)) == true;
             var win = new MainWindow(startInMonitorMode: monitor);
             desktop.MainWindow = win;
-            // --monitor 로 시작하면 창을 숨기고 트레이에서 감시
             if (monitor)
             {
+                // --monitor: 트레이에서 조용히 감시
                 win.ShowInTaskbar = false;
                 win.WindowState = Avalonia.Controls.WindowState.Minimized;
+            }
+            else
+            {
+                // 일반 실행: 창을 명시적으로 표시
+                win.Show();
+                win.Activate();
             }
         }
         base.OnFrameworkInitializationCompleted();

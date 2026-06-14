@@ -81,6 +81,7 @@ public partial class MainWindow : Window
         _lastReport = report;
         _rows.Clear();
         foreach (var h in report.Hosts) _rows.Add(new HostRow(h));
+        Watermark.IsVisible = _rows.Count == 0;   // 결과 차면 워터마크 숨김
         Progress.Value = 100;
 
         var violations = PolicyAnalyzer.Analyze(report);
@@ -253,10 +254,13 @@ public partial class MainWindow : Window
         try
         {
             var asm = typeof(MainWindow).Assembly.GetName().Name;
-            using var s = AssetLoader.Open(new Uri($"avares://{asm}/Assets/icon-256.png"));
-            Icon = new WindowIcon(s);
+            var uri = new Uri($"avares://{asm}/Assets/icon-256.png");
+            using (var s = AssetLoader.Open(uri)) Icon = new WindowIcon(s);
+            // 빈 결과 영역의 은은한 엠블럼 워터마크
+            using (var s2 = AssetLoader.Open(uri))
+                Watermark.Source = new Avalonia.Media.Imaging.Bitmap(s2);
         }
-        catch { /* 아이콘 없으면 기본값 */ }
+        catch { /* 리소스 없으면 무시 */ }
     }
 
     private void SetupTray()

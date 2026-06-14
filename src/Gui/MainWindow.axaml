@@ -64,8 +64,12 @@
         <ProgressBar Grid.Row="3" x:Name="Progress" Minimum="0" Maximum="100"
                      Height="6" Margin="0,8,0,0"/>
 
-        <!-- 결과 표 -->
-        <DataGrid Grid.Row="4" x:Name="Grid" Margin="0,8,0,0"
+        <!-- 결과 표 (빈 영역엔 엠블럼 워터마크) -->
+        <Grid Grid.Row="4" Margin="0,8,0,0">
+        <Image x:Name="Watermark" Width="240" Height="240" Opacity="0.06"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               IsHitTestVisible="False"/>
+        <DataGrid x:Name="Grid" Background="Transparent"
                   IsReadOnly="True" GridLinesVisibility="Horizontal"
                   CanUserResizeColumns="True" SelectionMode="Single">
             <DataGrid.Styles>
@@ -89,6 +93,7 @@
                 <DataGridTextColumn Header="근거" Binding="{Binding Evidence}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
+        </Grid>
 
         <!-- 상태줄 -->
         <Border Grid.Row="5" Background="#F3F4F6" Padding="6,4" Margin="0,8,0,0">
