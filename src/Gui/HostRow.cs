@@ -1,4 +1,4 @@
-using System.Windows.Media;
+using Avalonia.Media;
 
 namespace ScanPhoneNetwork.Gui;
 
@@ -13,7 +13,7 @@ public sealed class HostRow
         Confidence = h.Confidence;
         Vendor = h.Vendor ?? "";
         OpenPorts = string.Join(" ", h.OpenPorts);
-        Evidence = string.Join("\n", h.Evidence);
+        Evidence = string.Join("  |  ", h.Evidence);
         Source = h;
         IsSuspicious = h.Category is DeviceCategory.Router
                                   or DeviceCategory.WirelessAp
@@ -31,7 +31,7 @@ public sealed class HostRow
     public DiscoveredHost Source { get; }
 
     /// <summary>의심 장비는 빨간 계열로 강조.</summary>
-    public Brush RowBackground => IsSuspicious
+    public IBrush RowBackground => IsSuspicious
         ? new SolidColorBrush(Color.FromRgb(0xFF, 0xE0, 0xE0))
-        : Brushes.White;
+        : Brushes.Transparent;
 }

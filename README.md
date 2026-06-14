@@ -38,25 +38,27 @@
 Scan_Phone_Network.sln
 └─ src/
    ├─ Core/   ScanPhoneNetwork.Core   엔진(스캔·프로브·분류·CSV) — net8.0
-   ├─ Gui/    ScanPhoneNetwork.Gui    WPF 화면 + 감시 + 트레이 — net8.0-windows
+   ├─ Gui/    ScanPhoneNetwork.Gui    Avalonia 화면 + 감시 + 트레이 — net8.0
    └─ Cli/    ScanPhoneNetwork.Cli    명령줄 버전(테스트·헤드리스) — net8.0
 ```
 
+> GUI는 **Avalonia UI**라 **리눅스에서 개발·실행하고 Windows exe로 배포**합니다(전 프로젝트 OS 무관).
+
 ---
 
-## 빌드 (Windows)
+## 빌드
 
-```powershell
-# 전체
+```bash
+# 전체 빌드 (Linux/Windows 공통)
 dotnet build -c Release
 
-# GUI 단일 실행파일(배포용, .NET 런타임 포함)
-dotnet publish src/Gui/ScanPhoneNetwork.Gui.csproj -c Release -r win-x64 ^
-  --self-contained -p:PublishSingleFile=true
-# 결과: src/Gui/bin/Release/net8.0-windows/win-x64/publish/업무망점검기.exe
-```
+# GUI 실행해 보기
+dotnet run --project src/Gui
 
-> GUI(WPF)는 **Windows에서만 빌드**됩니다. Core/Cli 는 OS 무관.
+# 배포용 Windows 단일 실행파일(.NET 런타임 포함)
+dotnet publish src/Gui/ScanPhoneNetwork.Gui.csproj -c Release -r win-x64 --self-contained
+# 결과: src/Gui/bin/Release/net8.0/win-x64/publish/업무망점검기.exe
+```
 
 ---
 

@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ScanPhoneNetwork.Gui.MainWindow"
+        Title="업무망 무단 장비 점검기" Width="1000" Height="660"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="OnWindowKeyDown">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="10">
+
+        <!-- 기본 도구막대 -->
+        <Border Grid.Row="0" Background="#F3F4F6" CornerRadius="6" Padding="8">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="ScanButton" Content="내 네트워크 스캔" Click="OnScanClick"
+                        FontWeight="Bold" Height="36"/>
+                <Button x:Name="StopButton" Content="중지" Click="OnStopClick"
+                        IsEnabled="False" Height="36" Margin="6,0,0,0"/>
+                <Button x:Name="ReportButton" Content="⚠ 상세 보고" Click="OnReportClick"
+                        IsEnabled="False" Height="36" Margin="16,0,0,0"/>
+                <Button x:Name="CsvButton" Content="CSV 저장" Click="OnExportClick"
+                        IsEnabled="False" Height="36" Margin="6,0,0,0"/>
+                <TextBlock Text="현재 연결된 네트워크를 점검합니다" Foreground="Gray"
+                           VerticalAlignment="Center" Margin="16,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 숨김 고급: Ctrl+Shift+A -->
+        <Border Grid.Row="1" x:Name="AdvancedPanel" IsVisible="False"
+                Background="#EEF2FF" CornerRadius="6" Padding="8" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="대상 대역:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBox x:Name="TargetBox" Width="180" Watermark="예: 10.20.30.0/24"/>
+                <TextBlock Text="(고급: 비우면 자동 탐지)" Foreground="Gray"
+                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 감시 모드 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="2,8,0,0">
+            <CheckBox x:Name="MonitorCheck" Content="감시 모드" IsCheckedChanged="OnMonitorToggle"/>
+            <TextBlock Text="주기(분):" VerticalAlignment="Center" Margin="16,0,4,0"/>
+            <TextBox x:Name="IntervalBox" Text="10" Width="50"/>
+            <CheckBox x:Name="AutoStartCheck" Content="윈도우 시작 시 자동 실행(감시)"
+                      Margin="20,0,0,0" IsCheckedChanged="OnAutoStartToggle"/>
+        </StackPanel>
+
+        <ProgressBar Grid.Row="3" x:Name="Progress" Minimum="0" Maximum="100"
+                     Height="6" Margin="0,8,0,0"/>
+
+        <!-- 결과 표 -->
+        <DataGrid Grid.Row="4" x:Name="Grid" Margin="0,8,0,0"
+                  IsReadOnly="True" GridLinesVisibility="Horizontal"
+                  CanUserResizeColumns="True" SelectionMode="Single">
+            <DataGrid.Styles>
+                <Style Selector="DataGridRow">
+                    <Setter Property="Background" Value="{Binding RowBackground}"/>
+                </Style>
+            </DataGrid.Styles>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="이 장비를 정상(승인)으로 등록" Click="OnApproveClick"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="IP" Binding="{Binding Ip}" Width="130"/>
+                <DataGridTextColumn Header="MAC" Binding="{Binding Mac}" Width="150"/>
+                <DataGridTextColumn Header="종류" Binding="{Binding Category}" Width="110"/>
+                <DataGridTextColumn Header="신뢰도%" Binding="{Binding Confidence}" Width="75"/>
+                <DataGridTextColumn Header="제조사" Binding="{Binding Vendor}" Width="150"/>
+                <DataGridTextColumn Header="포트" Binding="{Binding OpenPorts}" Width="90"/>
+                <DataGridTextColumn Header="근거" Binding="{Binding Evidence}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 상태줄 -->
+        <Border Grid.Row="5" Background="#F3F4F6" Padding="6,4" Margin="0,8,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" x:Name="StatusText" Text="대기 중"
+                           VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" x:Name="SummaryText" Foreground="#B91C1C"
+                           FontWeight="Bold" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
